@@ -26,11 +26,33 @@ class Typing {
       // create the Function object for def
       Function func = new Function(def.f.id, new LinkedList<Variable>());
 
-      // check if function is already declared in
+      // check if function is already declared in tf.l
+      for (TDef fun : tf.l)
+        if (fun.f.name.equals(func.name))
+          Typing.error(def.f.loc, "duplicate function definition '" + func.name + "'");
 
+      // add params and check for duplicates:
+      for (Ident paramIdent : def.l) {
+        for (Variable var : func.params)
+          if (var.name.equals(paramIdent.id))
+            Typing.error(paramIdent.loc, "duplicate function argument identifier '" + paramIdent.id + "'");
+        func.params.add(Variable.mkVariable(paramIdent.id));
+      }
+      typeChecker.setContextF(func);
       def.s.accept(typeChecker);
+
+      TStmt body = typeChecker.evaluate(TStmt.class);
+      TDef tDef = new TDef(func, body);
+      tf.l.add(tDef);
+
     }
+
+    typeChecker.setContextF(mainF);
     f.s.accept(typeChecker);
+
+    TStmt body = typeChecker.evaluate(TStmt.class);
+    TDef tDef = new TDef(mainF, body);
+    tf.l.add(tDef);
 
     return tf;
   }
@@ -50,7 +72,7 @@ class TypeChecker implements Visitor {
     this.mainF = mainF;
   }
 
-  private void setContextF(Function f) {
+  public void setContextF(Function f) {
     if (!functions.containsKey(f.name)) {
       functions.put(f.name, f);
     }
@@ -61,11 +83,8 @@ class TypeChecker implements Visitor {
     contextF = f;
   }
 
-  private <T> T evaluate(Class<T> retType) {
+  public <T> T evaluate(Class<T> retType) {
     assert this.value == null; // check for reentrance
-    if (!this.value.getClass().equals(retType)) {
-      throw new RuntimeException("UNEXPECTED RETURN TYPE");
-    }
     Object v = this.value;
     this.value = null;
     return (T) v;
@@ -256,7 +275,7 @@ class TypeChecker implements Visitor {
 
   @Override
   public void visit(Sfor s) {
-    value = new TSfor(manageVariable(s.x), evalExpr(s.e), evalStmt(s));
+    value = new TSfor(manageVariable(s.x), evalExpr(s.e), evalStmt(s.s));
   }
 
   @Override
