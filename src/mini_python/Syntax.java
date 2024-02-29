@@ -461,7 +461,7 @@ class Variable {
 class Function {
   final String name;
   LinkedList<Variable> params;
-  HashMap<Ident, Variable> local;
+  HashMap<String, Variable> local;
 
   Function(String name, LinkedList<Variable> params) {
     this.name = name;
