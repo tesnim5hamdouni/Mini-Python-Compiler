@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Stack;
 
 class Typing {
 
@@ -21,6 +22,7 @@ class Typing {
     TFile tf = new TFile();
     Function mainF = new Function(MAIN, new LinkedList<Variable>());
     TypeChecker typeChecker = new TypeChecker(mainF);
+    
 
     for (Def def : f.l) {
       // create the Function object for def
@@ -38,16 +40,17 @@ class Typing {
             Typing.error(paramIdent.loc, "duplicate function argument identifier '" + paramIdent.id + "'");
         func.params.add(Variable.mkVariable(paramIdent.id));
       }
-      typeChecker.setContextF(func);
+      typeChecker.funStack.push(func);
+      typeChecker.setContextF(func); // set context to function being defined
       def.s.accept(typeChecker);
 
       TStmt body = typeChecker.evaluate(TStmt.class);
       TDef tDef = new TDef(func, body);
       tf.l.add(tDef);
-
+      typeChecker.funStack.pop();
     }
 
-    typeChecker.setContextF(mainF);
+    typeChecker.setContextF(mainF); // after all the fonction definitions, set context to main
     f.s.accept(typeChecker);
 
     TStmt body = typeChecker.evaluate(TStmt.class);
@@ -64,12 +67,15 @@ class TypeChecker implements Visitor {
   Object value = null;
   Function contextF; // defines current function scope
   Function mainF; // main function defined from file statement body
+  Stack<Function> funStack = new Stack<Function>(); // keep track of the current function scope
+  
 
   // keep track of user declared functions
   HashMap<String, Function> functions = new HashMap<>();
 
   TypeChecker(Function mainF) {
     this.mainF = mainF;
+    funStack.push(mainF);
   }
 
   public void setContextF(Function f) {
@@ -100,10 +106,9 @@ class TypeChecker implements Visitor {
     return evaluate(TStmt.class);
   }
 
-  private Variable manageVariable(Ident id) {
-
+  private Variable manageVariable(Ident id, boolean isAssign) {
     // first check if it's a global variable
-    Variable v = mainF.local.get(id);
+    Variable v = mainF.local.get(id.id);
     if (v != null) {
       return v;
     }
@@ -114,17 +119,23 @@ class TypeChecker implements Visitor {
       }
     }
     // then check if the variable is already declared as local variable:
-    v = contextF.local.get(id);
+    v = contextF.local.get(id.id);
     if (v != null) {
       return v;
     }
 
-    // if not, create a new variable and add it to the local scope
-    v = Variable.mkVariable(id.id);
-    contextF.local.put(id, v);
-    // BEWARE here we're updating the contextF object,
-    // so when before calling another function, we should same the context in mainF
-    return v;
+    if (isAssign) {
+      // if not, create a new variable and add it to the local scope
+      v = Variable.mkVariable(id.id);
+      contextF.local.put(id.id, v);
+      // BEWARE here we're updating the contextF object,
+      // so when before calling another function, we should same the context in mainF
+      return v;
+    } 
+    else {
+      Typing.error(id.loc, "variable " + id.id + " is not declared");
+      return null;
+    }
 
   }
 
@@ -180,7 +191,7 @@ class TypeChecker implements Visitor {
 
   @Override
   public void visit(Eident e) {
-    Variable v = manageVariable(e.x);
+    Variable v = manageVariable(e.x, false);
     value = new TEident(v);
   }
 
@@ -223,8 +234,11 @@ class TypeChecker implements Visitor {
           tList.add(evalExpr(expr));
         }
         // set new context:
+        funStack.push(f);
         setContextF(f);
         value = new TEcall(f, tList);
+        funStack.pop();
+        setContextF(funStack.peek());
 
     }
 
@@ -256,7 +270,7 @@ class TypeChecker implements Visitor {
 
   @Override
   public void visit(Sassign s) {
-    value = new TSassign(manageVariable(s.x), evalExpr(s.e));
+    value = new TSassign(manageVariable(s.x, true), evalExpr(s.e));
   }
 
   @Override
@@ -275,7 +289,7 @@ class TypeChecker implements Visitor {
 
   @Override
   public void visit(Sfor s) {
-    value = new TSfor(manageVariable(s.x), evalExpr(s.e), evalStmt(s.s));
+    value = new TSfor(manageVariable(s.x, true), evalExpr(s.e), evalStmt(s.s));
   }
 
   @Override
