@@ -130,7 +130,7 @@ class TCompiler implements TVisitor {
     s.accept(this); // visit print's argument --> result in %rax
     x.movq("%rax", "%rdi");
     x.call("print");
-    x.movq(null, null)
+    x.movq(null, null);
 
   }
 
