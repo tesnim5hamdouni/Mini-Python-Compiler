@@ -808,4 +808,6 @@ interface TVisitor {
   void visit(TSset s);
 
   void visit(TElen e);
+
+  void visit(TDef d);
 }
