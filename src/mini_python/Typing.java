@@ -136,7 +136,6 @@ class TypeChecker implements Visitor {
       Typing.error(id.loc, "variable " + id.id + " is not declared");
       return null;
     }
-
   }
 
   private Function manageFunctionCalls(Ident f) {
