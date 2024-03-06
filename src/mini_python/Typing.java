@@ -10,7 +10,7 @@ class Typing {
 
   static boolean debug = false;
   public static List<String> PRE_DEF_FUNC = Arrays.asList("range", "len", "list");
-  public static String MAIN = "_init_main_";
+  public static String MAIN = "main";
 
   // use this method to signal typing errors
   static void error(Location loc, String msg) {
