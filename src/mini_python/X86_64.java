@@ -377,7 +377,7 @@ public class X86_64 {
           writer.write(lasm.s);
       }
       writer.write(this.inline.toString());
-      writer.write("\t.data\n");
+      writer.write("\n\t.data\n");
       writer.write(this.data.toString());
       writer.close();
     } catch (IOException e) {

@@ -1,5 +1,0 @@
-gcc -c custom.c -o custom.o
-
-nasm -f elf64 my.asm -o my.o
-
-gcc -o program my.o custom.o

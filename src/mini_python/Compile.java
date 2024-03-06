@@ -97,24 +97,29 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(Cnone c) {
-    x.movq("$__None__", "%rax");
+    String newLabel = genDataLabel();
+    x.dlabel(newLabel); // add label to x86_64 data
+    x.quad(0);
+    x.quad(0);
+    x.movq("$" + newLabel, "%rax");
   }
 
   @Override
   public void visit(Cbool c) {
-    x.movq(c.b ? "$1" : "$0", "%rax"); // true = 1, false = 0, are labels needed?
+    System.out.println("Entered Cbool");
+    String newLabel = genDataLabel();
+    x.dlabel(newLabel); // add label to x86_64 data
+    x.quad(1);
+    if (c.b)
+      x.quad(1);
+    else
+      x.quad(0);
+    x.movq("$" + newLabel, "%rax");
   }
 
   @Override
   public void visit(Cstring c) {
-    // get a label and add it to data
-    // String newLabel = genDataLabel();
-    // x.dlabel(newLabel); // add label to x86_64 data
-    // x.quad(c.s.length());
-    // x.string(c.s);
-    // x.movq("$" + newLabel, "%rax");
-
-    int len = c.s.length() + 1 + 16;
+    // int len = c.s.length() + 1 + 16;
 
     // alignStack(x, () -> {
     // x.movq("$" + len, "%rdi");
@@ -124,7 +129,7 @@ class TCompiler implements TVisitor {
     x.dlabel(newLabel); // add label to x86_64 data
     x.quad(3);
     x.quad(c.s.length());
-    x.string(c.s);
+    x.string(c.s + "\\0");
     x.movq("$" + newLabel, "%rax");
 
     // saveRegister(x, () -> alignStack(x, () -> {
@@ -139,6 +144,7 @@ class TCompiler implements TVisitor {
   public void visit(Cint c) {
     String newLabel = genDataLabel();
     x.dlabel(newLabel);
+    x.quad(2);
     x.quad(c.i);
     x.movq("$" + newLabel, "%rax");
   }
@@ -153,6 +159,7 @@ class TCompiler implements TVisitor {
     } else if (e.c instanceof Cstring) {
       visit((Cstring) e.c);
     } else if (e.c instanceof Cint) {
+      System.out.println("Cint");
       visit((Cint) e.c);
     } else {
       throw new UnknownType("Unknown constant type at location: ");
@@ -165,18 +172,25 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TEunop e) {// need to distinguish neg from not following e.e type
+    System.out.println("Entered TEunop, e.e = " + e.e);
     e.e.accept(this); // result in %rax
     switch (e.op) {
       case Uneg:
-        x.negq("%rax");
+        System.out.println("Uneg");
+        x.movq("%rax", "%rdi");
+        alignStack(x, () -> {
+          x.call("unop_neg");
+        });
         break;
       case Unot:
-        x.cmpq("$0", "%rax");
-        x.sete("%al");
-        x.movzbq("%al", "%rax");
+        System.out.println("Unot");
+        x.movq("%rax", "%rdi");
+        alignStack(x, () -> {
+          x.call("unop_not");
+        });
         break;
       default:
-        throw new IllegalOperation("Unknown unary operation at location: ");
+        throw new IllegalOperation("Illegal unary operation at location: ");
     }
 
   }
@@ -215,7 +229,9 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSprint s) {
+    System.out.println("Entered TSprint, s.e = " + s.e);
     s.e.accept(this); // visit print's argument --> result in %rax
+    System.out.println("TSprint After accept");
     x.movq("%rax", "%rdi");
     alignStack(x, () -> {
       x.call("my_printf");
