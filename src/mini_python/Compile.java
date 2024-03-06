@@ -1,5 +1,7 @@
 package mini_python;
 
+import java.util.HashMap;
+
 import mini_python.ExceptionHandler.IllegalOperation;
 import mini_python.ExceptionHandler.UnknownType;
 
@@ -90,6 +92,9 @@ class TCompiler implements TVisitor {
   public String genTextLabel() {
     return "text_" + textCount++;
   }
+
+  // create a hash map to store vaiables and their labels
+  HashMap<Variable, Lab> varMap = new HashMap<Variable, Lab>();
 
   /*
    * Visit methods
@@ -225,6 +230,15 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSassign s) {
+    System.out.println("Entered TSassign, s.e = " + s.e + ", s.x = " + s.x);
+    // if variable isn't in the map, add it, else get the label
+    Lab l = varMap.get(s.x);
+    if (l == null) {
+      l = new Lab("v" + varMap.size());
+      varMap.put(s.x, l);
+    }
+    s.e.accept(this); // result in %rax
+
   }
 
   @Override
@@ -265,6 +279,7 @@ class TCompiler implements TVisitor {
   public void visit(TDef d) {
     String newLabel = d.f.name;
     x.label(newLabel);
+    System.out.println("Entered " + newLabel);
     d.body.accept(this);
   }
 

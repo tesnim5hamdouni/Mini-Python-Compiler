@@ -63,13 +63,11 @@ uint64_t* unop_neg(uint64_t* a){
 }
 
 uint64_t *unop_not(uint64_t *a){
-    if (a[0] != 1){
-        printf("Error: unsupported operand type(s) for not\n");
-        fflush(stdout);
-        return NULL;
-    }
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    // None, false, 0, empty list and empty string are all False --> return True
+    // Everything else is True --> return False
+    uint64_t *result = (uint64_t *)malloc(2 * sizeof(uint64_t));
     result[0] = 1;
-    result[1] = !a[1];
+    result[1] = a[0] == 0 || (a[0] == 1 && a[1] == 0) || (a[0] == 2 && a[1] == 0) || (a[0] == 3 && a[1] == 0) || (a[0] == 4 && a[1] == 0);
     return result;
+
 }

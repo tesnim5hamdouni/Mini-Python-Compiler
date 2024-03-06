@@ -1,1 +1,3 @@
-print(not True)
+x = -5
+y = 1 
+print(x)

@@ -6,9 +6,10 @@ main:
 	pushq %rbp
 	movq %rsp, %rbp
 	andq $-16, %rsp
-	call unop_not
+	call unop_neg
 	movq %rbp, %rsp
 	popq %rbp
+	movq $data_1, %rax
 	movq %rax, %rdi
 	pushq %rbp
 	movq %rsp, %rbp
@@ -19,5 +20,8 @@ main:
 
 	.data
 data_0:
-	.quad 1
+	.quad 2
+	.quad 5
+data_1:
+	.quad 2
 	.quad 1

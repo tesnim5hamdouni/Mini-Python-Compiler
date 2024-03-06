@@ -468,6 +468,10 @@ class Function {
     this.params = params;
     this.local = new HashMap<>();
   }
+
+  LinkedList<Variable> getParams() {
+    return this.params;
+  }
 }
 
 abstract class TExpr {
