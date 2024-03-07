@@ -124,18 +124,14 @@ class TypeChecker implements Visitor {
       return v;
     }
 
-    if (isAssign) {
-      // if not, create a new variable and add it to the local scope
-      v = Variable.mkVariable(id.id);
-      contextF.local.put(id.id, v);
-      // BEWARE here we're updating the contextF object,
-      // so when before calling another function, we should same the context in mainF
-      return v;
-    } 
-    else {
-      Typing.error(id.loc, "variable " + id.id + " is not declared");
-      return null;
-    }
+    // if not, create a new variable and add it to the local scope
+    v = Variable.mkVariable(id.id);
+    contextF.local.put(id, v);
+    contextF.localByName.put(v.name, v);
+    // BEWARE here we're updating the contextF object,
+    // so when before calling another function, we should same the context in mainF
+    return v;
+
   }
 
   private Function manageFunctionCalls(Ident f) {
