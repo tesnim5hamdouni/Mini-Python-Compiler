@@ -73,3 +73,219 @@ uint64_t *unop_not(uint64_t *a){
     result[1] = !a[1];
     return result;
 }
+
+uint64_t *binop_add(uint64_t *a, uint64_t *b){
+    if (a[0] != 2 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for +\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1] + b[1];
+    return result;
+}
+
+uint64_t *binop_sub(uint64_t *a, uint64_t *b){
+    if (a[0] != 2 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for -\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1] - b[1];
+    return result;
+}
+
+uint64_t *binop_mul(uint64_t *a, uint64_t *b){
+    if (a[0] != 2 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for *\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1] * b[1];
+    return result;
+}
+
+uint64_t *binop_div(uint64_t *a, uint64_t *b){
+    if (a[0] != 2 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for /\n");
+        fflush(stdout);
+        return NULL;
+    }
+    if (b[1] == 0){
+        printf("Error: division by zero\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1] / b[1];
+    return result;
+}
+
+uint64_t *binop_mod(uint64_t *a, uint64_t *b){
+    if (a[0] != 2 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for %%\n");
+        fflush(stdout);
+        return NULL;
+    }
+    if (b[1] == 0){
+        printf("Error: division by zero\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1] % b[1];
+    return result;
+}
+
+uint64_t *binop_eq(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    if (a[0] != b[0]){
+        result[1] = 0;
+    } else if (a[0] == 1 || a[0]==2){ 
+        result[1] = a[1] == b[1];
+    } else if (a[0] == 3){
+        if (a[1] != b[1]){
+            result[1] = 0;
+        } else {
+            result[1] = 1;
+            for (int i = 0; i < a[1]; i++){
+                if (*((char*)(a + 2 + i)) != *((char*)(b + 2 + i))){
+                    result[1] = 0;
+                    return result;
+                }
+            }
+            result[1] = 1;
+        }
+    } else if (a[0] == 4){
+        if (a[1] != b[1]){
+            result[1] = 0;
+        } else {
+            for (int i = 0; i < a[1]; i++){
+                if (binop_eq((uint64_t*)(a + 2 + i), (uint64_t*)(b + 2 + i))[1] == 0){
+                    result[1] = 0;
+                    return result;
+                }
+            }
+            result[1] = 1;
+        }
+    }
+    return result;
+}
+
+uint64_t *binop_neq(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    result[1] = !binop_eq(a, b)[1];
+    return result;
+}
+
+uint64_t *binop_lt(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    if (a[0] != b[0]){
+        printf("Error: comparison unsupported for different types\n");
+    } else if (a[0] == 1 || a[0] == 2){ 
+        result[1] = a[1] < b[1];
+    } else if (a[0] == 3){
+        int len_min = a[1] < b[1] ? a[1] : b[1];
+        for (int i = 0; i < len_min; i++){
+            if (*((char*)(a + 2 + i)) < *((char*)(b + 2 + i))){
+                result[1] = 1;
+                return result;
+            } else if (*((char*)(a + 2 + i)) > *((char*)(b + 2 + i))){
+                result[1] = 0;
+                return result;
+            }
+        }
+        if (a[1] < b[1]){
+            result[1] = 1;
+        } else {
+            result[1] = 0;
+        }
+    } else if (a[0] == 4){
+        printf("comparing lists\n");
+        int len_min = a[1] < b[1] ? a[1] : b[1];
+        for (int i = 0; i < len_min; i++){
+            if (binop_lt((uint64_t*)(a + 2 + i), (uint64_t*)(b + 2 + i))[1] == 1){
+                result[1] = 1;
+                return result;
+            } else if (binop_lt((uint64_t*)(b + 2 + i), (uint64_t*)(a + 2 + i))[1] == 1){
+                result[1] = 0;
+                return result;
+            }
+        }
+        if (a[1] < b[1]){
+            result[1] = 1;
+        } else {
+            result[1] = 0;
+        }
+    }
+    return result;
+}
+
+uint64_t *binop_le(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    result[1] = !binop_lt(b, a)[1];
+    return result;
+}
+
+uint64_t *binop_gt(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result = binop_lt(b, a);
+    return result;
+}
+
+uint64_t *binop_ge(uint64_t *a, uint64_t *b){
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    result[1] = !binop_lt(a, b)[1];
+    return result;
+}
+
+uint64_t *binop_and(uint64_t *a, uint64_t *b){
+    int a_val;
+    int b_val;
+    if (a[0] == 0){
+        a_val = 0;
+    } else {
+        a_val = !!a[1];
+    }
+    if (b[0] == 0){
+        b_val = 0;
+    } else {
+        b_val = !!b[1];
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    result[1] = a_val && b_val;
+    return result;
+}
+
+uint64_t *binop_or(uint64_t *a, uint64_t *b){
+    int a_val;
+    int b_val;
+    if (a[0] == 0){
+        a_val = 0;
+    } else {
+        a_val = !!a[1];
+    }
+    if (b[0] == 0){
+        b_val = 0;
+    } else {
+        b_val = !!b[1];
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 1;
+    result[1] = a_val || b_val;
+    return result;
+}
+
