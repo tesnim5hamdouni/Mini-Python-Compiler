@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import mini_python.ExceptionHandler.IllegalOperation;
 import mini_python.ExceptionHandler.UnknownType;
+import mini_python.ExceptionHandler.CompilationError;
 
 public class Compile {
 
@@ -94,7 +95,7 @@ class TCompiler implements TVisitor {
   }
 
   // create a hash map to store vaiables and their labels
-  HashMap<Variable, Lab> varMap = new HashMap<Variable, Lab>();
+  // HashMap<Variable, Lab> varMap = new HashMap<Variable, Lab>();
 
   /*
    * Visit methods
@@ -202,6 +203,11 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TEident e) {
+    System.out.println("Entered TEident, e.x = " + e.x.name);
+    if (e.x.ofs == -1) {
+      throw new CompilationError("Variable " + e.x.name + " not found");
+    }
+    x.movq(e.x.ofs + "(%rbp)", "%rax");
   }
 
   @Override
@@ -226,18 +232,17 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSreturn s) {
+    s.e.accept(this); // result in %rax
+    x.movq("%rbp", "%rsp");
+    x.popq("%rbp");
+    x.ret();
   }
 
   @Override
   public void visit(TSassign s) {
-    System.out.println("Entered TSassign, s.e = " + s.e + ", s.x = " + s.x);
-    // if variable isn't in the map, add it, else get the label
-    Lab l = varMap.get(s.x);
-    if (l == null) {
-      l = new Lab("v" + varMap.size());
-      varMap.put(s.x, l);
-    }
-    s.e.accept(this); // result in %rax
+    s.e.accept(this); // result in %
+    System.out.println("TSassign, s.x = " + s.x.name + " offest = " + s.x.ofs);
+    x.movq("%rax", s.x.ofs + "(%rbp)");
 
   }
 
@@ -277,10 +282,40 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TDef d) {
-    String newLabel = d.f.name;
-    x.label(newLabel);
-    System.out.println("Entered " + newLabel);
+    int counter;
+    x.label(d.f.name);
+    System.out.println("Entered TDef, d.f.name = " + d.f.name);
+
+    x.pushq("%rbp");
+    x.movq("%rsp", "%rbp");
+
+    // make space for local vars if necessary
+    if (!d.f.localByName.isEmpty()) {
+      x.subq("$" + (d.f.localByName.size() * 8), "%rsp");
+      counter = 0;
+      // set offset for every var in the local list, which is a hash map
+      for (HashMap.Entry<String, Variable> entry : d.f.localByName.entrySet()) {
+        entry.getValue().ofs = -8 - 8 * counter++;
+        System.out.println("Local var: " + entry.getValue().name + " offset: " + entry.getValue().ofs);
+      }
+      // update these offsets in d.f.local
+      for (HashMap.Entry<Ident, Variable> entry : d.f.local.entrySet()) {
+        entry.getValue().ofs = d.f.localByName.get(entry.getValue().name).ofs;
+      }
+    }
+
+
     d.body.accept(this);
+
+    // cleanup following whether it's main or not
+    if (d.f.name.equals(Compile.__MAIN__)) {
+      x.xorq("%rax", "%rax");
+      x.movq("%rbp", "%rsp");
+      x.popq("%rbp");
+      x.ret();
+    } else {
+      visit(new TSreturn(new TEcst(new Cnone())));
+    }
   }
 
 }

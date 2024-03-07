@@ -462,11 +462,13 @@ class Function {
   final String name;
   LinkedList<Variable> params;
   HashMap<Ident, Variable> local;
+  HashMap<String, Variable> localByName;
 
   Function(String name, LinkedList<Variable> params) {
     this.name = name;
     this.params = params;
     this.local = new HashMap<>();
+    this.localByName = new HashMap<>();
   }
 
   LinkedList<Variable> getParams() {

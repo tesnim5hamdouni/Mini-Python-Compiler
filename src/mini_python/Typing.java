@@ -122,6 +122,7 @@ class TypeChecker implements Visitor {
     // if not, create a new variable and add it to the local scope
     v = Variable.mkVariable(id.id);
     contextF.local.put(id, v);
+    contextF.localByName.put(v.name, v);
     // BEWARE here we're updating the contextF object,
     // so when before calling another function, we should same the context in mainF
     return v;
