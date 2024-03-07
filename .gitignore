@@ -2,3 +2,6 @@
 !.gitignore
 bin/
 Makefile
+*.py
+*.out
+*.s
