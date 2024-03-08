@@ -37,7 +37,7 @@ void my_printf(uint64_t * str) {
     // this is a list
         printf("[");
         for (int i = 0; i < str[1]; i++){
-            my_printf((uint64_t*)(str + 2 + i));
+            my_printf((uint64_t*)(str + 2 + 2*i));
             if (i != str[1] - 1){
                 printf(", ");
             }
@@ -72,6 +72,7 @@ uint64_t *unop_not(uint64_t *a){
 }
 
 uint64_t *binop_add(uint64_t *a, uint64_t *b){
+    
     if (a[0] != 2 || b[0] != 2){
         printf("Error: unsupported operand type(s) for +\n");
         fflush(stdout);
@@ -249,41 +250,49 @@ uint64_t *binop_ge(uint64_t *a, uint64_t *b){
 }
 
 uint64_t *binop_and(uint64_t *a, uint64_t *b){
-    int a_val;
-    int b_val;
-    if (a[0] == 0){
-        a_val = 0;
-    } else {
-        a_val = !!a[1];
+    // if a is equivalent to false, return a else return b
+    if (a[0] == 0 || a[1] == 0){
+        return a;
     }
-    if (b[0] == 0){
-        b_val = 0;
-    } else {
-        b_val = !!b[1];
-    }
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result[0] = 1;
-    result[1] = a_val && b_val;
-    return result;
+    return b;
 }
 
 uint64_t *binop_or(uint64_t *a, uint64_t *b){
-    int a_val;
-    int b_val;
-    if (a[0] == 0){
-        a_val = 0;
-    } else {
-        a_val = !!a[1];
+    // if a is equivalent to true, return a else return b
+    if (a[0] == 0 || a[1] == 0){
+        return b;
     }
-    if (b[0] == 0){
-        b_val = 0;
-    } else {
-        b_val = !!b[1];
-    }
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result[0] = 1;
-    result[1] = a_val || b_val;
-    return result;
+    return a;
 
+}
+
+uint64_t *get(uint64_t *a, uint64_t *b){
+    if (a[0] != 4 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for []\n");
+        fflush(stdout);
+        return NULL;
+    }
+    if (b[1] < 0 || b[1] >= a[1]){
+        printf("Error: index out of range\n");
+        fflush(stdout);
+        return NULL;
+    }
+    return (uint64_t*)(a + 2 + 2*b[1]);
+}
+
+uint64_t *set(uint64_t *a, uint64_t *b, uint64_t *c){
+    if (a[0] != 4 || b[0] != 2){
+        printf("Error: unsupported operand type(s) for []\n");
+        fflush(stdout);
+        return NULL;
+    }
+    if (b[1] < 0 || b[1] >= a[1]){
+        printf("Error: index out of range\n");
+        fflush(stdout);
+        return NULL;
+    }
+    a[2 + 2*b[1]] = c[0];
+    a[3 + 2*b[1]] = c[1];
+    return a;
 }
 

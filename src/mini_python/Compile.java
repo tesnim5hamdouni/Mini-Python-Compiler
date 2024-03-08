@@ -176,8 +176,9 @@ class TCompiler implements TVisitor {
   public void visit(TEbinop e) {
     System.out.println("Entered TEbinop, e.e1 = " + e.e1 + ", e.e2 = " + e.e2);
     e.e1.accept(this); // result in %rax
-    x.movq("%rax", "%rdi");
+    x.pushq("%rax");
     e.e2.accept(this); // result in %rax
+    x.popq("%rdi"); // put result of e.e1 in %rdi
     x.movq("%rax", "%rsi");
     switch (e.op) {
       case Badd:
@@ -303,18 +304,29 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TEget e) {
+    System.out.println("Entered TEget, e.e1 = " + e.e1 + ", e.e2 = " + e.e2);
+    e.e1.accept(this); // result in %rax
+    x.pushq("%rax");
+    e.e2.accept(this); // result in %rax
+    x.popq("%rdi");
+    x.movq("%rax", "%rsi");
+    alignStack(x, () -> {
+      x.call("get");
+    });
+
   }
 
   @Override
   public void visit(TElist e) {
-    // String newLabel = genDataLabel();
-    // x.dlabel(newLabel); // add label to x86_64 data
-    // x.quad(4);
-    // x.quad(e.l.size());
-    // for (TExpr te : e.l) {
-    //   te.accept(this);
-    // }
-    // x.movq("$" + newLabel, "%rax");
+    System.out.println("Entered TElist, e.l = " + e.l);
+    String newLabel = genDataLabel();
+    x.dlabel(newLabel); // add label to x86_64 data
+    x.quad(4);
+    x.quad(e.l.size());
+    for (TExpr te : e.l) {
+      te.accept(this);
+    }
+    x.movq("$" + newLabel, "%rax");
   }
 
   @Override
@@ -335,7 +347,7 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSassign s) {
-    s.e.accept(this); // result in %
+    s.e.accept(this); // result in %rax
     System.out.println("TSassign, s.x = " + s.x.name + " offest = " + s.x.ofs);
     x.movq("%rax", s.x.ofs + "(%rbp)");
 
@@ -369,6 +381,16 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSset s) {
+    System.out.println("Entered TSset, s.e1 = " + s.e1 + ", s.e2 = " + s.e2 + ", s.e3 = " + s.e3);
+    s.e1.accept(this); // result in %rax
+    x.movq("%rax", "%rdi");
+    s.e2.accept(this); // result in %rax
+    x.movq("%rax", "%rsi");
+    s.e3.accept(this); // result in %rax
+    x.movq("%rax", "%rdx");
+    alignStack(x, () -> {
+      x.call("set");
+    });
   }
 
   @Override
@@ -398,7 +420,6 @@ class TCompiler implements TVisitor {
         entry.getValue().ofs = d.f.localByName.get(entry.getValue().name).ofs;
       }
     }
-
 
     d.body.accept(this);
 
