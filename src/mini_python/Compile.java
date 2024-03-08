@@ -304,7 +304,6 @@ class TCompiler implements TVisitor {
       }
     }
 
-
     d.body.accept(this);
 
     // cleanup following whether it's main or not
