@@ -384,6 +384,10 @@ class TCompiler implements TVisitor {
     alignStack(x, () -> {
       x.call("my_printf");
     });
+    alignStack(x, () -> {
+      x.call("print_newline");
+    }
+    );
   }
 
   @Override

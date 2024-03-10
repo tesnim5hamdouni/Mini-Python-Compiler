@@ -6,7 +6,7 @@ void my_printf(uint64_t * str) {
     
     if (str[0] == 0){
         //None value
-        printf(" None\n");
+        printf("None");
         fflush(stdout);
 
         return;
@@ -14,21 +14,21 @@ void my_printf(uint64_t * str) {
 
     if (str[0] == 1){
         //Bool value
-        str[1] == 1 ? printf(" True \n") : printf(" False \n");
+        str[1] == 1 ? printf("True") : printf("False");
         fflush(stdout);
         return;
     }
 
     if (str[0] == 2){
         //Int value
-        printf(" %d \n", (int)str[1]);
+        printf("%d", (int)str[1]);
         fflush(stdout);
         return;
     }
 
     if (str[0] == 3) {
         //print char at str[2] of length str[1]
-        printf("%s\n", (char*)(str + 2));
+        printf("%s", (char*)(str + 2));
         fflush(stdout);
         return;
     }
@@ -42,13 +42,18 @@ void my_printf(uint64_t * str) {
                 printf(", ");
             }
         }
-        printf("]\n");
+        printf("]");
         fflush(stdout);
         return;
     }
 
 }
 
+
+void print_newline() {
+    printf("\n");
+    fflush(stdout);
+}
 
 uint64_t* unop_neg(uint64_t* a){
     if (a[0] != 2){
