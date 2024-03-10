@@ -421,7 +421,7 @@ class TCompiler implements TVisitor {
     e.e.accept(this); // result in %rax
     x.movq("%rax", "%rdi");
     alignStack(x, () -> {
-      x.call("len"); // TODO: implement len function in custom.c
+      x.call("len");
     });
   }
 

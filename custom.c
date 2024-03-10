@@ -342,3 +342,15 @@ uint64_t *set(uint64_t *a, uint64_t *b, uint64_t *c){
     return a;
 }
 
+uint64_t *len(uint64_t *a){
+    if (a[0] != 3 && a[0] != 4){
+        printf("Error: unsupported operand type for len()\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+    result[0] = 2;
+    result[1] = a[1];
+    return result;
+}
+
