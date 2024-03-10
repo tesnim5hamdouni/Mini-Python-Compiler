@@ -387,8 +387,7 @@ class TCompiler implements TVisitor {
     });
     alignStack(x, () -> {
       x.call("print_newline");
-    }
-    );
+    });
   }
 
   @Override
