@@ -125,24 +125,13 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(Cstring c) {
-    // int len = c.s.length() + 1 + 16;
 
-    // alignStack(x, () -> {
-    // x.movq("$" + len, "%rdi");
-    // x.call("malloc");
-    // });
     String newLabel = genDataLabel();
     x.dlabel(newLabel); // add label to x86_64 data
     x.quad(3);
     x.quad(c.s.length());
     x.string(c.s + "\\0");
     x.movq("$" + newLabel, "%rax");
-
-    // saveRegister(x, () -> alignStack(x, () -> {
-    // x.movq("%rax", "%rdi");
-    // x.movq("$" + newLabel, "%rsx");
-    // x.call("strcpy");
-    // }), regs);
 
   }
 
@@ -212,6 +201,15 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TEcall e) {
+    System.out.println("Entered TEcall, e.f = " + e.f.name);
+    // following the stack layout scheme suggested
+    // we'll push the arguments in reverse order
+    for (int i = e.l.size() - 1; i >= 0; i--) {
+      e.l.get(i).accept(this); // result in %rax
+      x.pushq("%rax");
+    }
+    x.call(e.f.name);
+
   }
 
   @Override
@@ -224,14 +222,30 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TErange e) {
+    e.e.accept(this); // result in %rax
+    x.movq("%rax", "%rdi");
+    alignStack(x, () -> {
+      x.call("range"); // TODO: implement range function in custom.c
+    });
   }
 
   @Override
   public void visit(TSif s) {
+    System.out.println("Entered TSif, s.s1 = " + s.s1 + " s.s2 = " + s.s2);
+    String elseLabel = genTextLabel(), endLabel = genTextLabel(); // generate labels for both jumps
+    s.e.accept(this); // &bool in %rax
+    x.cmpq("$0", "8(%rax)"); // bool value is in 2nd field
+    x.je(elseLabel);
+    s.s1.accept(this);
+    x.jmp(endLabel);
+    x.label(elseLabel);
+    s.s2.accept(this);
+    x.label(endLabel);
   }
 
   @Override
   public void visit(TSreturn s) {
+    System.out.println("Entered TSreturn, s.e = " + s.e);
     s.e.accept(this); // result in %rax
     x.movq("%rbp", "%rsp");
     x.popq("%rbp");
@@ -270,6 +284,7 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSeval s) {
+    s.e.accept(this);
   }
 
   @Override
@@ -278,11 +293,16 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TElen e) {
+    e.e.accept(this); // result in %rax
+    x.movq("%rax", "%rdi");
+    alignStack(x, () -> {
+      x.call("len"); // TODO: implement len function in custom.c
+    });
   }
 
   @Override
   public void visit(TDef d) {
-    int counter;
+    int index;
     x.label(d.f.name);
     System.out.println("Entered TDef, d.f.name = " + d.f.name);
 
@@ -292,10 +312,10 @@ class TCompiler implements TVisitor {
     // make space for local vars if necessary
     if (!d.f.localByName.isEmpty()) {
       x.subq("$" + (d.f.localByName.size() * 8), "%rsp");
-      counter = 0;
+      index = 0;
       // set offset for every var in the local list, which is a hash map
       for (HashMap.Entry<String, Variable> entry : d.f.localByName.entrySet()) {
-        entry.getValue().ofs = -8 - 8 * counter++;
+        entry.getValue().ofs = -8 - 8 * index++;
         System.out.println("Local var: " + entry.getValue().name + " offset: " + entry.getValue().ofs);
       }
       // update these offsets in d.f.local
