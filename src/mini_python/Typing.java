@@ -85,6 +85,7 @@ class TypeChecker implements Visitor {
     // if previous contextF is MAIN, save local variables
     if (contextF != null && contextF.name.equals(Typing.MAIN)) {
       mainF.local = contextF.local;
+      mainF.localByName = contextF.localByName;
     }
     contextF = f;
   }
@@ -108,7 +109,7 @@ class TypeChecker implements Visitor {
 
   private Variable manageVariable(Ident id, boolean isAssign) {
     // first check if it's a global variable
-    Variable v = mainF.local.get(id.id);
+    Variable v = mainF.localByName.get(id.id);
     if (v != null) {
       return v;
     }
@@ -119,18 +120,23 @@ class TypeChecker implements Visitor {
       }
     }
     // then check if the variable is already declared as local variable:
-    v = contextF.local.get(id.id);
+    v = contextF.localByName.get(id.id);
     if (v != null) {
       return v;
     }
 
-    // if not, create a new variable and add it to the local scope
-    v = Variable.mkVariable(id.id);
-    contextF.local.put(id, v);
-    contextF.localByName.put(v.name, v);
-    // BEWARE here we're updating the contextF object,
-    // so when before calling another function, we should same the context in mainF
-    return v;
+    if (isAssign) {
+      // if not, create a new variable and add it to the local scope
+      v = Variable.mkVariable(id.id);
+      contextF.local.put(id, v);
+      contextF.localByName.put(v.name, v);
+      // BEWARE here we're updating the contextF object,
+      // so when before calling another function, we should same the context in mainF
+      return v;
+    } else {
+      Typing.error(id.loc, "variable " + id.id + " is not declared");
+      return null;
+    }
 
   }
 
