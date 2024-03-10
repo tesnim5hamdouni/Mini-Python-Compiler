@@ -317,7 +317,8 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TElist e) {
-    // create empty list in memory using custom function, then set its elements using set
+    // create empty list in memory using custom function, then set its elements
+    // using set
 
     System.out.println("Entered TElist, e.l = " + e.l);
     x.movq("$" + e.l.size(), "%rdi");
@@ -325,12 +326,12 @@ class TCompiler implements TVisitor {
       x.call("list"); // result in %rax
     });
     x.movq("%rax", "%rdi");
-    for(int i = 0; i < e.l.size(); i++){
+    for (int i = 0; i < e.l.size(); i++) {
       x.pushq("%rdi");
       TExpr te = e.l.get(i);
       te.accept(this); // result in %rax
       x.popq("%rdi");
-      x.movq("%rax", (2+i)*8 + "(%rdi)");
+      x.movq("%rax", (2 + i) * 8 + "(%rdi)");
     }
     x.movq("%rdi", "%rax");
   }
