@@ -152,6 +152,7 @@ class TCompiler implements TVisitor {
     } else if (e.c instanceof Cbool) {
       visit((Cbool) e.c);
     } else if (e.c instanceof Cstring) {
+      System.out.println("Cstring");
       visit((Cstring) e.c);
     } else if (e.c instanceof Cint) {
       System.out.println("Cint");
@@ -316,15 +317,22 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TElist e) {
+    // create empty list in memory using custom function, then set its elements using set
+
     System.out.println("Entered TElist, e.l = " + e.l);
-    String newLabel = genDataLabel();
-    x.dlabel(newLabel); // add label to x86_64 data
-    x.quad(4);
-    x.quad(e.l.size());
-    for (TExpr te : e.l) {
-      te.accept(this);
+    x.movq("$" + e.l.size(), "%rdi");
+    alignStack(x, () -> {
+      x.call("list"); // result in %rax
+    });
+    x.movq("%rax", "%rdi");
+    for(int i = 0; i < e.l.size(); i++){
+      x.pushq("%rdi");
+      TExpr te = e.l.get(i);
+      te.accept(this); // result in %rax
+      x.popq("%rdi");
+      x.movq("%rax", (2+i)*8 + "(%rdi)");
     }
-    x.movq("$" + newLabel, "%rax");
+    x.movq("%rdi", "%rax");
   }
 
   @Override

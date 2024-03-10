@@ -5,3 +5,4 @@ Makefile
 *.out
 *.s
 output
+out

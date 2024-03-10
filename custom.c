@@ -28,7 +28,7 @@ void my_printf(uint64_t * str) {
 
     if (str[0] == 3) {
         //print char at str[2] of length str[1]
-        printf("%s", (char*)(str + 2));
+        printf("%s\n", (char*)(str + 2));
         fflush(stdout);
         return;
     }
@@ -37,12 +37,12 @@ void my_printf(uint64_t * str) {
     // this is a list
         printf("[");
         for (int i = 0; i < str[1]; i++){
-            my_printf((uint64_t*)(str + 2 + 2*i));
+            my_printf((uint64_t*)(*(str + 2 + i)));
             if (i != str[1] - 1){
                 printf(", ");
             }
         }
-        printf("]");
+        printf("]\n");
         fflush(stdout);
         return;
     }
@@ -73,15 +73,54 @@ uint64_t *unop_not(uint64_t *a){
 
 uint64_t *binop_add(uint64_t *a, uint64_t *b){
     
-    if (a[0] != 2 || b[0] != 2){
-        printf("Error: unsupported operand type(s) for +\n");
+    if (a[0] != b[0]){
+        printf("Error: cannot add operands of different type\n");
         fflush(stdout);
         return NULL;
     }
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result[0] = 2;
-    result[1] = a[1] + b[1];
-    return result;
+    if (a[0] == 0) {
+        printf("Error: unsupported operand type None for +\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    if (a[0] == 1){
+        printf("Error: unsupported operand type bool for +\n");
+        fflush(stdout);
+        return NULL;
+    }
+
+    if (a[0] == 2){
+        uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
+        result[0] = 2;
+        result[1] = a[1] + b[1];
+        return result;
+    }
+
+    if (a[0] == 3){
+        uint64_t* result = (uint64_t*)malloc((a[1] + b[1]) * sizeof(char) + 2 * sizeof(uint64_t));
+        result[0] = 3;
+        result[1] = a[1] + b[1];
+        // take the first string
+        char* str_a = (char*)(a + 2);
+        char* str_b = (char*)(b + 2);
+        snprintf((char*)(result + 2), a[1] + b[1] + 1, "%s%s", str_a, str_b);
+        return result;        
+    }
+
+    if (a[0]==4) {
+        uint64_t* result = (uint64_t*)malloc((a[1] + b[1] + 2) * sizeof(uint64_t));
+        result[0] = 4;
+        result[1] = a[1] + b[1];
+        for (int i = 0; i < a[1]; i++){
+            result[2 + i] = a[2 + i];
+        }
+        for (int i = 0; i < b[1]; i++){
+            result[2 + a[1] + i] = b[2 + i];
+        }
+        return result;
+    }
+
 }
 
 uint64_t *binop_sub(uint64_t *a, uint64_t *b){
@@ -266,6 +305,14 @@ uint64_t *binop_or(uint64_t *a, uint64_t *b){
 
 }
 
+uint64_t *list(int a){
+    uint64_t* result = (uint64_t*)malloc((2+a)* sizeof(uint64_t));
+    result[0] = 4;
+    result[1] = a;
+    return result;
+}
+
+
 uint64_t *get(uint64_t *a, uint64_t *b){
     if (a[0] != 4 || b[0] != 2){
         printf("Error: unsupported operand type(s) for []\n");
@@ -277,7 +324,7 @@ uint64_t *get(uint64_t *a, uint64_t *b){
         fflush(stdout);
         return NULL;
     }
-    return (uint64_t*)(a + 2 + 2*b[1]);
+    return (uint64_t*)(*(a + 2 + b[1]));
 }
 
 uint64_t *set(uint64_t *a, uint64_t *b, uint64_t *c){
@@ -291,8 +338,7 @@ uint64_t *set(uint64_t *a, uint64_t *b, uint64_t *c){
         fflush(stdout);
         return NULL;
     }
-    a[2 + 2*b[1]] = c[0];
-    a[3 + 2*b[1]] = c[1];
+    a[2 + b[1]] = (uint64_t) c;
     return a;
 }
 
