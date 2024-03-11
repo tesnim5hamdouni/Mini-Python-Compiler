@@ -1,6 +1,7 @@
 .*
 !.gitignore
 bin/
+src/mini_python/ExceptionHandler/
 Makefile
 *.out
 *.s
