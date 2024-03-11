@@ -165,92 +165,95 @@ class TCompiler implements TVisitor {
   @Override
   public void visit(TEbinop e) {
     System.out.println("Entered TEbinop, e.e1 = " + e.e1 + ", e.e2 = " + e.e2);
-    e.e1.accept(this); // result in %rax
-    x.pushq("%rax");
-    e.e2.accept(this); // result in %rax
-    x.popq("%rdi"); // put result of e.e1 in %rdi
-    x.movq("%rax", "%rsi");
-    switch (e.op) {
-      case Badd:
-        System.out.println("Badd");
-        alignStack(x, () -> {
-          x.call("binop_add");
-        });
-        break;
-      case Bsub:
-        System.out.println("Bsub");
-        alignStack(x, () -> {
-          x.call("binop_sub");
-        });
-        break;
-      case Bmul:
-        System.out.println("Bmul");
-        alignStack(x, () -> {
-          x.call("binop_mul");
-        });
-        break;
-      case Bdiv:
-        System.out.println("Bdiv");
-        alignStack(x, () -> {
-          x.call("binop_div");
-        });
-        break;
-      case Bmod:
-        System.out.println("Bmod");
-        alignStack(x, () -> {
-          x.call("binop_mod");
-        });
-        break;
-      case Band:
-        System.out.println("Band");
-        alignStack(x, () -> {
-          x.call("binop_and");
-        });
-        break;
-      case Bor:
-        System.out.println("Bor");
-        alignStack(x, () -> {
-          x.call("binop_or");
-        });
-        break;
-      case Beq:
-        System.out.println("Beq");
-        alignStack(x, () -> {
-          x.call("binop_eq");
-        });
-        break;
-      case Bneq:
-        System.out.println("Bneq");
-        alignStack(x, () -> {
-          x.call("binop_neq");
-        });
-        break;
-      case Blt:
-        System.out.println("Blt");
-        alignStack(x, () -> {
-          x.call("binop_lt");
-        });
-        break;
-      case Ble:
-        System.out.println("Ble");
-        alignStack(x, () -> {
-          x.call("binop_le");
-        });
-        break;
-      case Bgt:
-        System.out.println("Bgt");
-        alignStack(x, () -> {
-          x.call("binop_gt");
-        });
-        break;
-      case Bge:
-        System.out.println("Bge");
-        alignStack(x, () -> {
-          x.call("binop_ge");
-        });
-        break;
-      default:
-        throw new IllegalOperation("Illegal binary operation at location: ");
+    if (e.op != Binop.Band && e.op != Binop.Bor) {
+      e.e1.accept(this); // result in %rax
+      x.pushq("%rax");
+      e.e2.accept(this); // result in %rax
+      x.popq("%rdi"); // put result of e.e1 in %rdi
+      x.movq("%rax", "%rsi");
+      switch (e.op) {
+        case Badd:
+          System.out.println("Badd");
+          alignStack(x, () -> {
+            x.call("binop_add");
+          });
+          break;
+        case Bsub:
+          System.out.println("Bsub");
+          alignStack(x, () -> {
+            x.call("binop_sub");
+          });
+          break;
+        case Bmul:
+          System.out.println("Bmul");
+          alignStack(x, () -> {
+            x.call("binop_mul");
+          });
+          break;
+        case Bdiv:
+          System.out.println("Bdiv");
+          alignStack(x, () -> {
+            x.call("binop_div");
+          });
+          break;
+        case Bmod:
+          System.out.println("Bmod");
+          alignStack(x, () -> {
+            x.call("binop_mod");
+          });
+          break;
+        case Beq:
+          System.out.println("Beq");
+          alignStack(x, () -> {
+            x.call("binop_eq");
+          });
+          break;
+        case Bneq:
+          System.out.println("Bneq");
+          alignStack(x, () -> {
+            x.call("binop_neq");
+          });
+          break;
+        case Blt:
+          System.out.println("Blt");
+          alignStack(x, () -> {
+            x.call("binop_lt");
+          });
+          break;
+        case Ble:
+          System.out.println("Ble");
+          alignStack(x, () -> {
+            x.call("binop_le");
+          });
+          break;
+        case Bgt:
+          System.out.println("Bgt");
+          alignStack(x, () -> {
+            x.call("binop_gt");
+          });
+          break;
+        case Bge:
+          System.out.println("Bge");
+          alignStack(x, () -> {
+            x.call("binop_ge");
+          });
+          break;
+        default:
+          throw new IllegalOperation("Illegal binary operation at location: ");
+      }
+    }
+    else {
+      String  endLabel = genSectionLabel(); // generate labels for both jumps
+      e.e1.accept(this); // &bool in %rax
+      x.cmpq("$0", "8(%rax)"); // bool value is in 2nd field
+      if (e.op == Binop.Band) {
+        x.je(endLabel);
+      }
+      else {
+        x.jne(endLabel);
+      }
+      e.e2.accept(this);
+      x.label(endLabel);
     }
   }
 

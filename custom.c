@@ -335,23 +335,6 @@ uint64_t *binop_ge(uint64_t *a, uint64_t *b){
     return result;
 }
 
-uint64_t *binop_and(uint64_t *a, uint64_t *b){
-    // if a is equivalent to false, return a else return b
-    if (a[0] == 0 || a[1] == 0){
-        return a;
-    }
-    return b;
-}
-
-uint64_t *binop_or(uint64_t *a, uint64_t *b){
-    // if a is equivalent to true, return a else return b
-    if (a[0] == 0 || a[1] == 0){
-        return b;
-    }
-    return a;
-
-}
-
 uint64_t *list(int a){
     uint64_t* result = (uint64_t*)malloc((2+a)* sizeof(uint64_t));
     result[0] = 4;
