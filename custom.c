@@ -55,6 +55,48 @@ void print_newline() {
     fflush(stdout);
 }
 
+void is_list(uint64_t *a){
+    if (a[0] != 4){
+        if (a[0] == 0){
+            printf("Error: unsupported operand type for type None\n");
+        } else if (a[0] == 1){
+            printf("Error: unsupported operand type for type bool\n");
+        } else if (a[0] == 2){
+            printf("Error: unsupported operand type for type int\n");
+        } else if (a[0] == 3){
+            printf("Error: unsupported operand type for type string\n");
+        } else {
+            printf("Error: unsupported operand type ");
+        }
+        fflush(stdout);
+        return;
+    }
+
+
+}
+
+void * range(uint64_t * a){
+    if (a[0] != 2){
+        printf("Error: unsupported argument type for range()\n");
+        fflush(stdout);
+        return NULL;
+    }
+    uint64_t * result = (uint64_t *)malloc((a[1] + 2) * sizeof(uint64_t ));
+    uint64_t ** temp = (uint64_t **)malloc(a[1] * sizeof(uint64_t *));
+    for (int i = 0; i < a[1]; i++){
+        temp[i] = (uint64_t *)malloc(2 * sizeof(uint64_t));
+        temp[i][0] = 2;
+        temp[i][1] = i;
+    }
+    result[0] = 4;
+    result[1] = a[1];
+    for (int i = 0; i < a[1]; i++){
+        result[2 + i] = (uint64_t)temp[i];
+    }
+
+    return result;
+}
+
 uint64_t* unop_neg(uint64_t* a){
     if (a[0] != 2){
         printf("Error: unsupported operand type(s) for -\n");
@@ -358,4 +400,6 @@ uint64_t *len(uint64_t *a){
     result[1] = a[1];
     return result;
 }
+
+
 

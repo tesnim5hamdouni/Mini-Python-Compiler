@@ -155,7 +155,7 @@ for f in exec/*.py; do
     if compile $f; then
 	rm -f out
 	score_comp=`expr $score_comp + 1`;
-	if gcc -no-pie $asm && ./a.out > out; then
+	if gcc custom.c $asm && ./a.out > out; then
 	    score_out=`expr $score_out + 1`;
 	    if cmp --quiet out $expected; then
 		score_test=`expr $score_test + 1`;
@@ -182,7 +182,7 @@ for f in exec-fail/*.py; do
     asm=exec-fail/`basename $f .py`.s
     rm -f $asm
     max=`expr $max + 1`;
-    if compile $f && gcc -no-pie $asm; then
+    if compile $f && gcc custom.c $asm; then
 	score_comp=`expr $score_comp + 1`;
 	if { ./a.out > out; } >& /dev/null; then
 	    echo

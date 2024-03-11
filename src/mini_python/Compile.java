@@ -90,8 +90,8 @@ class TCompiler implements TVisitor {
     return "data_" + dataCount++;
   }
 
-  public String genTextLabel() {
-    return "text_" + textCount++;
+  public String genSectionLabel() {
+    return "section_" + textCount++;
   }
 
   // create a hash map to store vaiables and their labels
@@ -317,7 +317,8 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TElist e) {
-    // create empty list in memory using custom function, then set its elements using set
+    // create empty list in memory using custom function, then set its elements
+    // using set
 
     System.out.println("Entered TElist, e.l = " + e.l);
     x.movq("$" + e.l.size(), "%rdi");
@@ -325,29 +326,31 @@ class TCompiler implements TVisitor {
       x.call("list"); // result in %rax
     });
     x.movq("%rax", "%rdi");
-    for(int i = 0; i < e.l.size(); i++){
+    for (int i = 0; i < e.l.size(); i++) {
       x.pushq("%rdi");
       TExpr te = e.l.get(i);
       te.accept(this); // result in %rax
       x.popq("%rdi");
-      x.movq("%rax", (2+i)*8 + "(%rdi)");
+      x.movq("%rax", (2 + i) * 8 + "(%rdi)");
     }
     x.movq("%rdi", "%rax");
   }
 
   @Override
   public void visit(TErange e) {
+    System.out.println("Entered TErange = ");
     e.e.accept(this); // result in %rax
     x.movq("%rax", "%rdi");
     alignStack(x, () -> {
-      x.call("range"); // TODO: implement range function in custom.c
+      x.call("range");
     });
+
   }
 
   @Override
   public void visit(TSif s) {
     System.out.println("Entered TSif, s.s1 = " + s.s1 + " s.s2 = " + s.s2);
-    String elseLabel = genTextLabel(), endLabel = genTextLabel(); // generate labels for both jumps
+    String elseLabel = genSectionLabel(), endLabel = genSectionLabel(); // generate labels for both jumps
     s.e.accept(this); // &bool in %rax
     x.cmpq("$0", "8(%rax)"); // bool value is in 2nd field
     x.je(elseLabel);
@@ -386,8 +389,7 @@ class TCompiler implements TVisitor {
     });
     alignStack(x, () -> {
       x.call("print_newline");
-    }
-    );
+    });
   }
 
   @Override
@@ -399,6 +401,35 @@ class TCompiler implements TVisitor {
 
   @Override
   public void visit(TSfor s) {
+    System.out.println("Entered TSfor, s.s = " + s.s + ", s.e = " + s.e + ", s.x = " + s.x);
+    String Loop = genSectionLabel(), Test = genSectionLabel();
+    s.e.accept(this); // result in %rax
+    x.pushq("%rax");
+    x.movq("%rax", "%rdi");
+    alignStack(x, () -> {
+      x.call("is_list"); // check if it's a list: if not, throw an error
+    });
+    x.popq("%rax");
+    x.leaq("16(%rax)", "%r11");
+    x.movq("8(%rax)", "%r12");
+    x.leaq("16(%rax,%r12,8)", "%r12");
+
+    x.jmp(Test);
+
+    x.label(Loop);
+    x.movq("(%r11)", "%r10");
+    x.movq("%r10", s.x.ofs + "(%rbp)");
+
+    saveRegister(x, () -> {
+      s.s.accept(this);
+    }, new String[] { "%r11", "%r12" });
+
+    x.addq("$8", "%r11");
+
+    x.label(Test);
+    x.cmpq("%r11", "%r12");
+    x.jne(Loop);
+
   }
 
   @Override
@@ -451,6 +482,13 @@ class TCompiler implements TVisitor {
       for (HashMap.Entry<Ident, Variable> entry : d.f.local.entrySet()) {
         entry.getValue().ofs = d.f.localByName.get(entry.getValue().name).ofs;
       }
+    }
+
+    // set offset of params
+    index = 0;
+    for (Variable v : d.f.params) {
+      v.ofs = 16 + 8 * index++;
+      System.out.println("Param: " + v.name + " offset: " + v.ofs);
     }
 
     d.body.accept(this);
