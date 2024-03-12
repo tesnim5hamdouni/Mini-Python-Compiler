@@ -166,10 +166,11 @@ class TCompiler implements TVisitor {
   public void visit(TEbinop e) {
     System.out.println("Entered TEbinop, e.e1 = " + e.e1 + ", e.e2 = " + e.e2);
     e.e1.accept(this); // result in %rax
-    x.pushq("%rax");
-    e.e2.accept(this); // result in %rax
-    x.popq("%rdi"); // put result of e.e1 in %rdi
-    x.movq("%rax", "%rsi");
+    x.movq("%rax", "%rdi");
+    saveRegister(x, () -> {
+      e.e2.accept(this);
+      x.movq("%rax", "%rsi");
+    }, new String[] { "%rdi" });
     switch (e.op) {
       case Badd:
         System.out.println("Badd");
@@ -298,6 +299,7 @@ class TCompiler implements TVisitor {
       x.pushq("%rax");
     }
     x.call(e.f.name);
+    x.addq("$" + (e.l.size() * 8), "%rsp"); // clean up the stack
 
   }
 
