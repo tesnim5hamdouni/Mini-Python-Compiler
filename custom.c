@@ -75,22 +75,34 @@ void is_list(uint64_t *a){
 
 }
 
-void * range(uint64_t * a){
-    if (a[0] != 2){
+void * range(uint64_t * a, uint64_t * b, uint64_t * c){
+    if (a[0] != 2 || b[0] != 2 || c[0] != 2){
         printf("Error: unsupported argument type for range()\n");
         fflush(stdout);
         return NULL;
     }
-    uint64_t * result = (uint64_t *)malloc((a[1] + 2) * sizeof(uint64_t ));
-    uint64_t ** temp = (uint64_t **)malloc(a[1] * sizeof(uint64_t *));
-    for (int i = 0; i < a[1]; i++){
+    if (c[1] == 0){
+        printf("Error: range() arg 3 must not be zero\n");
+        fflush(stdout);
+        return NULL;
+    }
+    
+    int sign_c = (int)c[1] > 0 ? 1 : -1;
+    int length = ((int)b[1] - (int)a[1] + (int)c[1] - sign_c) / (int)c[1];
+    length = length > 0 ? length : 0;  // Ensure the length is not negative
+
+    uint64_t * result = (uint64_t *)malloc((length + 2) * sizeof(uint64_t ));
+    uint64_t ** temp = (uint64_t **)malloc(length * sizeof(uint64_t *));
+    int j=a[1];
+    for (int i = 0; i < length; i++){
         temp[i] = (uint64_t *)malloc(2 * sizeof(uint64_t));
         temp[i][0] = 2;
-        temp[i][1] = i;
+        temp[i][1] = j;
+        j += c[1];
     }
-    result[0] = 4;
-    result[1] = a[1];
-    for (int i = 0; i < a[1]; i++){
+    result[0] = 4;    
+    result[1] = length;
+    for (int i = 0; i < length; i++){
         result[2 + i] = (uint64_t)temp[i];
     }
 

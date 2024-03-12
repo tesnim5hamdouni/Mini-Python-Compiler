@@ -344,8 +344,14 @@ class TCompiler implements TVisitor {
   @Override
   public void visit(TErange e) {
     System.out.println("Entered TErange = ");
-    e.e.accept(this); // result in %rax
-    x.movq("%rax", "%rdi");
+    e.start.accept(this); // result in %rax
+    x.pushq("%rax");
+    e.end.accept(this); // result in %rax
+    x.pushq("%rax");
+    e.step.accept(this); // result in %rax
+    x.popq("%rsi");
+    x.popq("%rdi");
+    x.movq("%rax", "%rdx");
     alignStack(x, () -> {
       x.call("range");
     });

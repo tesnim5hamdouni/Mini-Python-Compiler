@@ -219,9 +219,28 @@ class TypeChecker implements Visitor {
         Ecall ecall = (Ecall) e.l.get(0);
         if (!ecall.f.id.equals("range"))
           Typing.error(e.f.loc, "list function takes range as argument");
-        if (ecall.l.size() != 1)
-          Typing.error(e.f.loc, "range function takes 1 argument");
-        value = new TErange(evalExpr(ecall.l.get(0)));
+        if (ecall.l.size() == 1) {
+          TExpr start = new TEcst(new Cint(0));
+          TExpr end = evalExpr(ecall.l.get(0));
+          TExpr step = new TEcst(new Cint(1));
+          value = new TErange(start, end, step);
+        }
+        else if (ecall.l.size() == 2) {
+          TExpr start = evalExpr(ecall.l.get(0));
+          TExpr end = evalExpr(ecall.l.get(1));
+          TExpr step = new TEcst(new Cint(1));
+          value = new TErange(start, end, step);
+        }
+        else if (ecall.l.size() == 3) {
+          TExpr start = evalExpr(ecall.l.get(0));
+          TExpr end = evalExpr(ecall.l.get(1));
+          TExpr step = evalExpr(ecall.l.get(2));
+          value = new TErange(start, end, step);
+        }
+        else {
+          Typing.error(e.f.loc, "range function takes 1, 2 or 3 arguments");
+        }
+
         break;
 
       default:

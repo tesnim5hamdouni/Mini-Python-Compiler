@@ -586,11 +586,13 @@ class TElist extends TExpr {
 }
 
 class TErange extends TExpr {
-  final TExpr e;
+  final TExpr start, end, step;
 
-  TErange(TExpr e) {
+  TErange(TExpr start, TExpr end, TExpr step) {
     super();
-    this.e = e;
+    this.start = start;
+    this.end = end;
+    this.step = step;
   }
 
   @Override
