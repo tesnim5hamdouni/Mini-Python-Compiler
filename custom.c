@@ -253,7 +253,7 @@ uint64_t *binop_eq(uint64_t *a, uint64_t *b){
             result[1] = 0;
         } else {
             for (int i = 0; i < a[1]; i++){
-                if (binop_eq((uint64_t*)(a + 2 + i), (uint64_t*)(b + 2 + i))[1] == 0){
+                if (binop_eq((uint64_t*)a[2+i], (uint64_t*)b[2+i])[1] == 0){
                     result[1] = 0;
                     return result;
                 }
@@ -276,6 +276,7 @@ uint64_t *binop_lt(uint64_t *a, uint64_t *b){
     result[0] = 1;
     if (a[0] != b[0]){
         printf("Error: comparison unsupported for different types\n");
+        exit(1);
     } else if (a[0] == 1 || a[0] == 2){ 
         result[1] = a[1] < b[1];
     } else if (a[0] == 3){
@@ -295,13 +296,12 @@ uint64_t *binop_lt(uint64_t *a, uint64_t *b){
             result[1] = 0;
         }
     } else if (a[0] == 4){
-        printf("comparing lists\n");
         int len_min = a[1] < b[1] ? a[1] : b[1];
         for (int i = 0; i < len_min; i++){
-            if (binop_lt((uint64_t*)(a + 2 + i), (uint64_t*)(b + 2 + i))[1] == 1){
+            if (binop_lt((uint64_t*)a[2+i], (uint64_t*)b[2+i])[1] == 1){
                 result[1] = 1;
                 return result;
-            } else if (binop_lt((uint64_t*)(b + 2 + i), (uint64_t*)(a + 2 + i))[1] == 1){
+            } else if (binop_lt((uint64_t*)b[2+i], (uint64_t*)a[2+i])[1] == 1){
                 result[1] = 0;
                 return result;
             }
