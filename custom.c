@@ -316,22 +316,18 @@ uint64_t *binop_lt(uint64_t *a, uint64_t *b){
 }
 
 uint64_t *binop_le(uint64_t *a, uint64_t *b){
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result[0] = 1;
-    result[1] = !binop_lt(b, a)[1];
+    uint64_t* result = binop_lt(b, a);
+    result[1] = !result[1];
     return result;
 }
 
 uint64_t *binop_gt(uint64_t *a, uint64_t *b){
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result = binop_lt(b, a);
-    return result;
+    return binop_lt(b, a);;
 }
 
 uint64_t *binop_ge(uint64_t *a, uint64_t *b){
-    uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
-    result[0] = 1;
-    result[1] = !binop_lt(a, b)[1];
+    uint64_t* result = binop_lt(a, b);
+    result[1] = !result[1];
     return result;
 }
 
