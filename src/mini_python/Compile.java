@@ -452,10 +452,12 @@ class TCompiler implements TVisitor {
   public void visit(TSset s) {
     System.out.println("Entered TSset, s.e1 = " + s.e1 + ", s.e2 = " + s.e2 + ", s.e3 = " + s.e3);
     s.e1.accept(this); // result in %rax
-    x.movq("%rax", "%rdi");
+    x.pushq("%rax");
     s.e2.accept(this); // result in %rax
-    x.movq("%rax", "%rsi");
+    x.pushq("%rax");
     s.e3.accept(this); // result in %rax
+    x.popq("%rsi");
+    x.popq("%rdi");
     x.movq("%rax", "%rdx");
     alignStack(x, () -> {
       x.call("set");
