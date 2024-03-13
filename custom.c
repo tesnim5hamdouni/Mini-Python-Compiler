@@ -86,7 +86,7 @@ void * range(uint64_t * a, uint64_t * b, uint64_t * c){
         fflush(stdout);
         return NULL;
     }
-    
+
     int sign_c = (int)c[1] > 0 ? 1 : -1;
     int length = ((int)b[1] - (int)a[1] + (int)c[1] - sign_c) / (int)c[1];
     length = length > 0 ? length : 0;  // Ensure the length is not negative
@@ -245,7 +245,10 @@ uint64_t *binop_eq(uint64_t *a, uint64_t *b){
     result[0] = 1;
     if (a[0] != b[0]){
         result[1] = 0;
-    } else if (a[0] == 1 || a[0]==2){ 
+    } else if (a[0] == 0){
+        result[1] = 1;
+    }
+    else if (a[0] == 1 || a[0]==2){ 
         result[1] = a[1] == b[1];
     } else if (a[0] == 3){
         if (a[1] != b[1]){
