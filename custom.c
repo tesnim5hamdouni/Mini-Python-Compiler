@@ -69,7 +69,7 @@ void is_list(uint64_t *a){
             printf("Error: unsupported operand type ");
         }
         fflush(stdout);
-        return;
+        exit(1);
     }
 
 
@@ -79,12 +79,12 @@ void * range(uint64_t * a, uint64_t * b, uint64_t * c){
     if (a[0] != 2 || b[0] != 2 || c[0] != 2){
         printf("Error: unsupported argument type for range()\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (c[1] == 0){
         printf("Error: range() arg 3 must not be zero\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
 
     int sign_c = (int)c[1] > 0 ? 1 : -1;
@@ -113,7 +113,7 @@ uint64_t* unop_neg(uint64_t* a){
     if (a[0] != 2){
         printf("Error: unsupported operand type(s) for -\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
@@ -135,18 +135,18 @@ uint64_t *binop_add(uint64_t *a, uint64_t *b){
     if (a[0] != b[0]){
         printf("Error: cannot add operands of different type\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (a[0] == 0) {
         printf("Error: unsupported operand type None for +\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
 
     if (a[0] == 1){
         printf("Error: unsupported operand type bool for +\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
 
     if (a[0] == 2){
@@ -186,7 +186,7 @@ uint64_t *binop_sub(uint64_t *a, uint64_t *b){
     if (a[0] != 2 || b[0] != 2){
         printf("Error: unsupported operand type(s) for -\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
@@ -198,7 +198,7 @@ uint64_t *binop_mul(uint64_t *a, uint64_t *b){
     if (a[0] != 2 || b[0] != 2){
         printf("Error: unsupported operand type(s) for *\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
@@ -210,12 +210,12 @@ uint64_t *binop_div(uint64_t *a, uint64_t *b){
     if (a[0] != 2 || b[0] != 2){
         printf("Error: unsupported operand type(s) for /\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (b[1] == 0){
         printf("Error: division by zero\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
@@ -227,12 +227,12 @@ uint64_t *binop_mod(uint64_t *a, uint64_t *b){
     if (a[0] != 2 || b[0] != 2){
         printf("Error: unsupported operand type(s) for %%\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (b[1] == 0){
         printf("Error: division by zero\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
@@ -358,12 +358,12 @@ uint64_t *get(uint64_t *a, uint64_t *b){
     if (a[0] != 4 || b[0] != 2){
         printf("Error: unsupported operand type(s) for []\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (b[1] < 0 || b[1] >= a[1]){
         printf("Error: index out of range\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     return (uint64_t*)(*(a + 2 + b[1]));
 }
@@ -372,12 +372,12 @@ uint64_t *set(uint64_t *a, uint64_t *b, uint64_t *c){
     if (a[0] != 4 || b[0] != 2){
         printf("Error: unsupported operand type(s) for []\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     if (b[1] < 0 || b[1] >= a[1]){
         printf("Error: index out of range\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     a[2 + b[1]] = (uint64_t) c;
     return a;
@@ -387,7 +387,7 @@ uint64_t *len(uint64_t *a){
     if (a[0] != 3 && a[0] != 4){
         printf("Error: unsupported operand type for len()\n");
         fflush(stdout);
-        return NULL;
+        exit(1);
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
