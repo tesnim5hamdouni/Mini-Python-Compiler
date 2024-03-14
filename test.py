@@ -1,37 +1,67 @@
-def prefix(n, l):
-    print(l)
-    r = list(range(n))
-    print(r)
-    for i in r:
-        r[i] = l[i]
-        print("l[i] =")
-        print(l[i])
-    return r
 
-def range2(n1, n2):
-    r = list(range(n2 - n1 + 1))
-    i = 0
-    for x in r:
-        r[i] = n1
-        n1 = n1 + 1
-        i = i + 1
-    return r
+### IMPORTANT NOTE ###
+### This is the only test for which the expected output
+### is *not* the same as the one obtained with Python.
+### The difference comes from arithmetic: Mini Python uses
+### machine arithmetic for division and module, whereas Python uses
+### something else (where the modulus has the sign of the *second* operand).
 
-def filter_out(p, l):
-    i = 0
-    for x in l:
-        if x > p and x % p == 0:
-            l[i] = 0
-        i = i + 1
+# fixed-point arithmetic
+# precision q = 8192 i.e. 13 bits for the decimal part
 
-def primes(n):
-    l = range2(2, n)
-    nb = 0
-    for x in l:
-        if x > 0:
-            l[nb] = x
-            nb = nb + 1
-            filter_out(x, l)
-    return prefix(nb, l)
+def add(x, y):
+    return x + y
+def sub(x, y):
+    return x - y
+def mul(x, y):
+    t = x * y
+    return (t + 8192 // 2) // 8192
+def div(x, y):
+    t = x * 8192
+    return (t + y // 2) // y
+def of_int(x):
+    return x * 8192
 
-print(primes(5))
+def iter(n, a, b, xn, yn):
+    if n == 100: return 1
+    print(n)
+    print(a)
+    print(b)
+    print(xn)
+    print(yn)
+    xn2 = mul(xn, xn)
+    yn2 = mul(yn, yn)
+    print("inside iter")
+    if add(xn2, yn2) > of_int(4): return 0
+    return iter(n+1, a, b, add(sub(xn2, yn2), a), add(mul(of_int(2), mul(xn, yn)), b))
+
+def inside(x, y):
+    
+    return iter(0, x, y, of_int(0), of_int(0))
+
+def main():
+    xmin = of_int(-2)
+    xmax = of_int(1)
+    steps = 4
+    deltax = div(sub(xmax, xmin), of_int(2 * steps))
+    ymin = of_int(-1)
+    ymax = of_int(1)
+    deltay = div(sub(ymax, ymin), of_int(steps))
+    for i in list(range(steps)):
+        # print(i)
+        y = add(ymin, mul(of_int(i), deltay))
+        s = ""
+        # print("---------------------")
+        print(list(range(2 * steps)))
+        for j in list(range(2 * steps)):
+            print("")
+            x = add(xmin, mul(of_int(j), deltax))
+            if inside(x, y): 
+                s = s + "0"
+            else: 
+                s = s + "1"
+            print(s)
+        # print("---------------------")
+        print(s)
+
+main()

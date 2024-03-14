@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 void my_printf(uint64_t * str) {
     
@@ -157,13 +158,27 @@ uint64_t *binop_add(uint64_t *a, uint64_t *b){
     }
 
     if (a[0] == 3){
+        printf("trying to malloc %d\n", (a[1] + b[1]) * sizeof(char) + 2 * sizeof(uint64_t));
         uint64_t* result = (uint64_t*)malloc((a[1] + b[1]) * sizeof(char) + 2 * sizeof(uint64_t));
+        printf("malloced\n");
         result[0] = 3;
         result[1] = a[1] + b[1];
         // take the first string
         char* str_a = (char*)(a + 2);
         char* str_b = (char*)(b + 2);
-        snprintf((char*)(result + 2), a[1] + b[1] + 1, "%s%s", str_a, str_b);
+        strcpy((char*)(result + 2), str_a);
+        strcpy((char*)(result + 2) + a[1], str_b);
+
+        // snprintf((char*)(result + 2), a[1] + b[1] + 1, "%s%s", str_a, str_b);
+        printf("------------------------\n");
+        printf("a: %s\n", str_a);
+        printf("a[1]: %d\n", a[1]);
+        printf("b: %s\n", str_b);
+        printf("b[1]: %d\n", b[1]);
+        printf("result: %s\n", (char*)(result + 2));
+        printf("result[1]: %d\n", result[1]);
+        printf("------------------------\n");
+
         return result;        
     }
 

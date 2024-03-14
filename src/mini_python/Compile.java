@@ -242,15 +242,13 @@ class TCompiler implements TVisitor {
         default:
           throw new IllegalOperation("Illegal binary operation at location: ");
       }
-    }
-    else {
-      String  endLabel = genSectionLabel(); // generate labels for both jumps
+    } else {
+      String endLabel = genSectionLabel(); // generate labels for both jumps
       e.e1.accept(this); // &bool in %rax
       x.cmpq("$0", "8(%rax)"); // bool value is in 2nd field
       if (e.op == Binop.Band) {
         x.je(endLabel);
-      }
-      else {
+      } else {
         x.jne(endLabel);
       }
       e.e2.accept(this);
@@ -301,7 +299,11 @@ class TCompiler implements TVisitor {
       e.l.get(i).accept(this); // result in %rax
       x.pushq("%rax");
     }
-    x.call(e.f.name);
+    String functionName = e.f.name;
+    if (functionName.equals("main")) {
+      functionName = "_main_";
+    }
+    x.call(functionName);
     x.addq("$" + (e.l.size() * 8), "%rsp"); // clean up the stack
 
   }
