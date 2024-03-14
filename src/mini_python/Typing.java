@@ -22,11 +22,14 @@ class Typing {
     TFile tf = new TFile();
     Function mainF = new Function(MAIN, new LinkedList<Variable>());
     TypeChecker typeChecker = new TypeChecker(mainF);
-    
 
     for (Def def : f.l) {
       // create the Function object for def
-      Function func = new Function(def.f.id, new LinkedList<Variable>());
+      String functionName = def.f.id;
+      if (def.f.id.equals(MAIN)) {
+        functionName = "_" + MAIN + "_";
+      }
+      Function func = new Function(functionName, new LinkedList<Variable>());
 
       // check if function is already declared in tf.l
       for (TDef fun : tf.l)
@@ -68,7 +71,6 @@ class TypeChecker implements Visitor {
   Function contextF; // defines current function scope
   Function mainF; // main function defined from file statement body
   Stack<Function> funStack = new Stack<Function>(); // keep track of the current function scope
-  
 
   // keep track of user declared functions
   HashMap<String, Function> functions = new HashMap<>();
@@ -224,20 +226,17 @@ class TypeChecker implements Visitor {
           TExpr end = evalExpr(ecall.l.get(0));
           TExpr step = new TEcst(new Cint(1));
           value = new TErange(start, end, step);
-        }
-        else if (ecall.l.size() == 2) {
+        } else if (ecall.l.size() == 2) {
           TExpr start = evalExpr(ecall.l.get(0));
           TExpr end = evalExpr(ecall.l.get(1));
           TExpr step = new TEcst(new Cint(1));
           value = new TErange(start, end, step);
-        }
-        else if (ecall.l.size() == 3) {
+        } else if (ecall.l.size() == 3) {
           TExpr start = evalExpr(ecall.l.get(0));
           TExpr end = evalExpr(ecall.l.get(1));
           TExpr step = evalExpr(ecall.l.get(2));
           value = new TErange(start, end, step);
-        }
-        else {
+        } else {
           Typing.error(e.f.loc, "range function takes 1, 2 or 3 arguments");
         }
 
