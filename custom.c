@@ -219,7 +219,7 @@ uint64_t *binop_div(uint64_t *a, uint64_t *b){
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
-    result[1] = a[1] / b[1];
+    result[1] = (int64_t)a[1] / (int64_t)b[1];
     return result;
 }
 
@@ -236,7 +236,7 @@ uint64_t *binop_mod(uint64_t *a, uint64_t *b){
     }
     uint64_t* result = (uint64_t*)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
-    result[1] = a[1] % b[1];
+    result[1] = (int)a[1] % (int)b[1];
     return result;
 }
 
@@ -293,7 +293,7 @@ uint64_t *binop_lt(uint64_t *a, uint64_t *b){
         printf("Error: comparison unsupported for different types\n");
         exit(1);
     } else if (a[0] == 1 || a[0] == 2){ 
-        result[1] = a[1] < b[1];
+        result[1] = (int)a[1] < (int)b[1];
     } else if (a[0] == 3){
         int len_min = a[1] < b[1] ? a[1] : b[1];
         for (int i = 0; i < len_min; i++){
