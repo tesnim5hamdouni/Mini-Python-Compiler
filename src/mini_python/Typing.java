@@ -25,11 +25,11 @@ class Typing {
 
     for (Def def : f.l) {
       // create the Function object for def
-      String functionName = def.f.id;
-      if (def.f.id.equals(MAIN)) {
-        functionName = "_" + MAIN + "_";
+      String name = def.f.id;
+      if (name.equals(MAIN)) {
+        name = "__main__";
       }
-      Function func = new Function(functionName, new LinkedList<Variable>());
+      Function func = new Function(name, new LinkedList<Variable>());
 
       // check if function is already declared in tf.l
       for (TDef fun : tf.l)

@@ -24,44 +24,49 @@ def of_int(x):
 
 def iter(n, a, b, xn, yn):
     if n == 100: return 1
-    print(n)
-    print(a)
-    print(b)
-    print(xn)
-    print(yn)
     xn2 = mul(xn, xn)
     yn2 = mul(yn, yn)
-    print("inside iter")
-    if add(xn2, yn2) > of_int(4): return 0
+    # print("n = ")
+    # print(n)
+    # print("xn = ")
+    # print(xn)
+    # print("yn = ")
+    # print(yn)
+    # print("a = ")
+    # print(a)
+    # print("b = ")
+    # print(b)
+    
+    if add(xn2, yn2) > of_int(4): 
+        # print("add(xn2, yn2) > of_int(4)")
+        return 0
+    # print("recurse\n -----------------------------")
     return iter(n+1, a, b, add(sub(xn2, yn2), a), add(mul(of_int(2), mul(xn, yn)), b))
 
 def inside(x, y):
-    
+    # print("went inside")
+    # print("x = ")
+    # print(x)
+    # print("y = ")
+    # print(y)
+    # print("=====================================")
     return iter(0, x, y, of_int(0), of_int(0))
 
 def main():
     xmin = of_int(-2)
     xmax = of_int(1)
-    steps = 4
+    steps = 40
     deltax = div(sub(xmax, xmin), of_int(2 * steps))
     ymin = of_int(-1)
     ymax = of_int(1)
     deltay = div(sub(ymax, ymin), of_int(steps))
     for i in list(range(steps)):
-        # print(i)
         y = add(ymin, mul(of_int(i), deltay))
         s = ""
-        # print("---------------------")
-        print(list(range(2 * steps)))
         for j in list(range(2 * steps)):
-            print("")
             x = add(xmin, mul(of_int(j), deltax))
-            if inside(x, y): 
-                s = s + "0"
-            else: 
-                s = s + "1"
-            print(s)
-        # print("---------------------")
+            if inside(x, y): s = s + "0"
+            else: s = s + "1"
         print(s)
 
 main()
