@@ -26,7 +26,7 @@ void my_printf(uint64_t *str)
     if (str[0] == 2)
     {
         // Int value
-        printf("%d", (int)str[1]);
+        printf("%ld", (long)str[1]);
         fflush(stdout);
         return;
     }
@@ -107,13 +107,13 @@ void *range(uint64_t *a, uint64_t *b, uint64_t *c)
         exit(1);
     }
 
-    int sign_c = (int)c[1] > 0 ? 1 : -1;
-    int length = ((int)b[1] - (int)a[1] + (int)c[1] - sign_c) / (int)c[1];
+    int sign_c = (long)c[1] > 0 ? 1 : -1;
+    long length = ((long)b[1] - (long)a[1] + (long)c[1] - sign_c) / (long)c[1];
     length = length > 0 ? length : 0; // Ensure the length is not negative
 
     uint64_t *result = (uint64_t *)malloc((length + 2) * sizeof(uint64_t));
     uint64_t **temp = (uint64_t **)malloc(length * sizeof(uint64_t *));
-    int j = a[1];
+    long j = a[1];
     for (int i = 0; i < length; i++)
     {
         temp[i] = (uint64_t *)malloc(2 * sizeof(uint64_t));
@@ -284,7 +284,7 @@ uint64_t *binop_mod(uint64_t *a, uint64_t *b)
     }
     uint64_t *result = (uint64_t *)malloc(2 * sizeof(uint64_t));
     result[0] = 2;
-    result[1] = (int)a[1] % (int)b[1];
+    result[1] = (long)a[1] % (long)b[1];
     return result;
 }
 
@@ -365,7 +365,7 @@ uint64_t *binop_lt(uint64_t *a, uint64_t *b)
     }
     else if (a[0] == 1 || a[0] == 2)
     {
-        result[1] = (int)a[1] < (int)b[1];
+        result[1] = (long)a[1] < (long)b[1];
     }
     else if (a[0] == 3)
     {
